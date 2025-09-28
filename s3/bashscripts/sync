@@ -1,0 +1,87 @@
+#!/bin/bash
+
+
+if [ -z "$1" ]; then
+    echo "Error: No Bucket name provided."
+    exit 1
+fi
+
+echo "First argument is: $1"
+
+# Script to generate 6 random files
+# Usage: ./generate_files.sh [directory]
+
+# Set default directory or use first argument
+output_dir=${1:-"random_files"}
+
+# Create output directory if it doesn't exist
+mkdir -p "$output_dir"
+
+echo "Generating 6 random files in directory: $output_dir"
+
+# Generate 6 files
+for i in {1..6}; do
+    # Generate random filename
+    filename="file_$(date +%s)_${i}.txt"
+    filepath="$output_dir/$filename"
+    
+    # Generate random content (mix of different types)
+    case $i in
+        1)
+            # Random text with words
+            echo "Random words file #$i" > "$filepath"
+            for j in {1..10}; do
+                echo "Line $j: $(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 20 | head -n 1)" >> "$filepath"
+            done
+            ;;
+        2)
+            # Random numbers
+            echo "Random numbers file #$i" > "$filepath"
+            for j in {1..15}; do
+                echo "$RANDOM $RANDOM $RANDOM" >> "$filepath"
+            done
+            ;;
+        3)
+            # Random mixed content
+            echo "Mixed content file #$i" > "$filepath"
+            echo "UUID: $(uuidgen 2>/dev/null || echo "$(date +%s)-$(($RANDOM * $RANDOM))")" >> "$filepath"
+            echo "Timestamp: $(date)" >> "$filepath"
+            echo "Random string: $(cat /dev/urandom | tr -dc 'a-zA-Z0-9!@#$%^&*' | fold -w 32 | head -n 1)" >> "$filepath"
+            ;;
+        4)
+            # Lorem ipsum style
+            echo "Lorem ipsum file #$i" > "$filepath"
+            echo "Lorem ipsum dolor sit amet, consectetur adipiscing elit." >> "$filepath"
+            echo "Random data: $(cat /dev/urandom | base64 | head -c 50)" >> "$filepath"
+            ;;
+        5)
+            # System info
+            echo "System info file #$i" > "$filepath"
+            echo "User: $USER" >> "$filepath"
+            echo "Date: $(date)" >> "$filepath"
+            echo "PWD: $(pwd)" >> "$filepath"
+            echo "Random: $(shuf -i 1000-9999 -n 1)" >> "$filepath"
+            ;;
+        6)
+            # Binary-like content (but still text)
+            echo "Binary-style file #$i" > "$filepath"
+            for j in {1..8}; do
+                echo "$(cat /dev/urandom | od -An -tx1 | head -n 1 | tr -d ' ')" >> "$filepath"
+            done
+            ;;
+    esac
+    
+    echo "Created: $filepath ($(wc -c < "$filepath") bytes)"
+done
+
+echo ""
+echo "File generation complete!"
+echo "Files created in: $output_dir"
+echo "Total files: $(ls -1 "$output_dir" | wc -l)"
+echo ""
+echo "File list:"
+ls -lh "$output_dir"
+
+aws s3 sync $output_dir s3://"$1"
+
+echo "Successfully Added Files to $1 bucket"

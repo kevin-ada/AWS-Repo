@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+if [ -z "$1" ]; then
+    echo "Error: No Bucket name provided."
+    exit 1
+fi
+
+echo "First argument is: $1"
+
+aws s3api create-bucket --bucket "$1" --region eu-north-1 --create-bucket-configuration LocationConstraint=eu-north-1 --query Location --output text
+
+echo "Bucket $1 created successfully."

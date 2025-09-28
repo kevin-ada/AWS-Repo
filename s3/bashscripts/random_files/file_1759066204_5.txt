@@ -1,0 +1,5 @@
+System info file #5
+User: kevin-kim
+Date: Sun Sep 28 16:30:04 EAT 2025
+PWD: /home/kevin-kim/AWS-Repo/s3/bashscripts
+Random: 3657
